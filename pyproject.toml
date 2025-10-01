@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61.0", "setuptools-scm>=8.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "pytest-llm"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Fast AI reliability test suite - A pytest plugin for testing LLM outputs with success rate thresholds"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -40,3 +40,6 @@ Repository = "https://github.com/codingjoe/pytest-llm"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools_scm]
+
