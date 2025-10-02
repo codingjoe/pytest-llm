@@ -1,16 +1,14 @@
 [build-system]
-requires = ["setuptools>=61.0", "setuptools-scm>=8.0"]
-build-backend = "setuptools.build_meta"
+requires = ["flit_core>=3.2", "flit_scm", "wheel"]
+build-backend = "flit_scm:buildapi"
 
 [project]
 name = "pytest-llm"
-dynamic = ["version"]
-description = "Fast AI reliability test suite - A pytest plugin for testing LLM outputs with success rate thresholds"
+dynamic = ["version", "description"]
 readme = "README.md"
-requires-python = ">=3.8"
-license = {text = "BSD-2-Clause"}
+license = { file = "LICENSE" }
 authors = [
-    {name = "Johannes Maron"},
+  { name = "Johannes Maron", email = "johannes@maron.family" },
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -20,26 +18,69 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Testing",
 ]
+requires-python = ">=3.10"
 dependencies = [
     "pytest>=7.0.0",
 ]
 
+[project.optional-dependencies]
+test = [
+  "pytest-cov",
+]
+lint = [
+  "pre-commit",
+  "ruff",
+]
+
 [project.entry-points.pytest11]
-pytest_llm = "pytest_llm.plugin"
+pytest_llm = "pytest_llm"
 
 [project.urls]
 Homepage = "https://github.com/codingjoe/pytest-llm"
 Repository = "https://github.com/codingjoe/pytest-llm"
 
-[tool.setuptools.packages.find]
-where = ["src"]
-
 [tool.setuptools_scm]
+write_to = "pytest_llm/_version.py"
 
+[tool.pytest.ini_options]
+addopts = "--cov --tb=short -rxs"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["pytest_llm"]
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.ruff]
+src = ["pytest_llm", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+    "I", # isort
+    "S", # flake8-bandit
+    "D", # pydocstyle
+    "UP", # pyupgrade
+    "B", # flake8-bugbear
+    "C", # flake8-comprehensions
+]
+
+ignore = ["B904", "D1", "E501", "S101"]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+split-on-trailing-comma = true
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+force-wrap-aliases = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
