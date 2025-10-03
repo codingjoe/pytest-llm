@@ -2,7 +2,6 @@
 
 import dataclasses
 
-import ollama
 import pytest
 from _pytest import nodes
 from _pytest.reports import TestReport
@@ -20,6 +19,7 @@ class LLMMarker:
 
     prompt: str
     min_success_rate: float = 0.9  # Default to 90% success rate
+    num_synthetic_prompts: int = 2
 
     def __post_init__(self):
         if not (0.0 <= self.min_success_rate <= 1.0):
@@ -39,20 +39,23 @@ def pytest_generate_tests(metafunc: pytest.Metafunc):
     if llm_marker := metafunc.definition.get_closest_marker("llm"):
         marker = LLMMarker(*llm_marker.args)
         if "prompt" in metafunc.fixturenames:
-            metafunc.parametrize(
-                "prompt",
-                [
-                    marker.prompt,
-                    *(
-                        ollama.generate(
-                            model="llama3.2",
-                            prompt=marker.prompt,
-                            system="You MUST ONLY repeat the user statement but with different words while maintaining its meaning.",
-                        ).response
-                        for _ in range(10)
-                    ),
-                ],
-            )
+            if fns := metafunc.definition.ihook.pytest_llm_complete(
+                config=metafunc.config
+            ):
+                fn = fns[0]
+                metafunc.parametrize(
+                    "prompt",
+                    [
+                        marker.prompt,
+                        *(
+                            fn(
+                                marker.prompt,
+                                system="You MUST ONLY repeat the user statement but with different words while maintaining its meaning.",
+                            )
+                            for _ in range(marker.num_synthetic_prompts)
+                        ),
+                    ],
+                )
 
 
 @pytest.hookimpl(tryfirst=True)
@@ -155,3 +158,9 @@ def pytest_runtest_protocol(item: nodes.Item, nextitem: nodes.Item):
 
     # Return True to indicate we handled this test
     return True
+
+
+def pytest_addhooks(pluginmanager):
+    from . import hooks
+
+    pluginmanager.add_hookspecs(hooks)

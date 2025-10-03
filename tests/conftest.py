@@ -9,13 +9,13 @@ import pytest
 def github_models_complete(prompt, model=None, system=None) -> str:
     messages = [{"role": "system", "content": system}] if system else []
     messages += [{"role": "user", "content": prompt}]
-    if GITHUB_API_KEY := os.getenv("GITHUB_API_KEY"):
+    if GITHUB_TOKEN := os.getenv("GITHUB_TOKEN"):
         response = httpx.post(
             "https://models.github.ai/inference/chat/completions",
             headers={
                 "Content-Type": "application/json",
                 "Accept": "application/vnd.github+json",
-                "Authorization": f"Bearer {GITHUB_API_KEY}",
+                "Authorization": f"Bearer {GITHUB_TOKEN}",
                 "X-GitHub-Api-Version": "2022-11-28",
             },
             json={
@@ -31,4 +31,8 @@ def github_models_complete(prompt, model=None, system=None) -> str:
 
 @pytest.fixture
 def llm() -> typing.Callable[[str], str]:
+    return github_models_complete
+
+
+def pytest_llm_complete(config):
     return github_models_complete
