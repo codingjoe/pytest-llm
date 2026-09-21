@@ -9,6 +9,7 @@ A pytest plugin that provides a custom marker for testing LLM (Large Language Mo
 ```python
 import pytest
 
+
 @pytest.mark.llm("How many R's are in the Word 'Strawberry'?", 0.9)
 def test_counting(prompt, llm):
     result = llm(prompt).lower()
